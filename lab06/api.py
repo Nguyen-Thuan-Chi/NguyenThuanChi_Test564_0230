@@ -1,9 +1,11 @@
 from flask import Flask, request, jsonify
 from cipher.rsa import RSACipher
+from cipher.railfence import RailFenceCipher
 app = Flask(__name__)
 
 #RSA CIPHER ALGORITHM
 rsa_cipher = RSACipher()
+rail_cipher = RailFenceCipher()
 
 @app.route('/api/rsa/generate_keys', methods=['GET'])
 def rsa_generate_keys():
@@ -63,6 +65,29 @@ def rsa_verify_signature():
 
 
 
+@app.route('/api/railfence/encrypt', methods=['POST'])
+def rf_encrypt():
+    data = request.json
+    plain_text = data.get('plain_text', '')
+    key = int(data.get('key', 2))
+    
+    if key < 2:
+        return jsonify({'error': 'Key must be at least 2'}), 400
+        
+    encrypted_text = rail_cipher.rail_fence_encrypt(plain_text, key)
+    return jsonify({'encrypted_text': encrypted_text})
+
+@app.route('/api/railfence/decrypt', methods=['POST'])
+def rf_decrypt():
+    data = request.json
+    cipher_text = data.get('cipher_text', '')
+    key = int(data.get('key', 2))
+    
+    if key < 2:
+        return jsonify({'error': 'Key must be at least 2'}), 400
+        
+    decrypted_text = rail_cipher.rail_fence_decrypt(cipher_text, key)
+    return jsonify({'decrypted_text': decrypted_text})
 
 
 #main function
